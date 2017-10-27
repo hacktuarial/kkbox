@@ -149,11 +149,11 @@ def merge_it_all_together(df,
 
     logging.info('adding numeric feature matrix')
     matrix_list.append(X_numeric)
-    logging.info('creating song matrix')
+    logging.info('indexing song matrix')
     matrix_list.append(songs.X[song_idx, :])
-    logging.info('creating genre matrix')
+    logging.info('indexing genre matrix')
     matrix_list.append(genres[song_idx, :])
-    logging.info('creating member matrix')
+    logging.info('indexing member matrix')
     matrix_list.append(members.X[member_idx, :])
     logging.info('concatenating matrices')
     X = sparse.hstack(matrix_list)
@@ -236,6 +236,7 @@ def main(diamond):
                                    df=df_train)
 
     logging.info('merging validation data together')
+    del df_train
     X_val, y_val = merge_it_all_together(df_val,
                                          diamond=diamond,
                                          members=members,
@@ -244,6 +245,7 @@ def main(diamond):
                                          genres=X_genres)
     del df_val
     D_val = xgb.DMatrix(sparse.hstack([X_val, X_source[utils.TTS:, :]]))
+    logging.info('IT WORKED')
     logging.info('merging training data together')
     X_train, y_train = merge_it_all_together(df_train,
                                              diamond=diamond,
