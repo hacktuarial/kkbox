@@ -7,9 +7,10 @@ from sklearn.feature_extraction import DictVectorizer
 from diamond.glms.logistic import LogisticRegression
 
 import dill
+import pickle
+from joblib import Memory
 import os
 import logging
-
 
 
 class ExtraInfo(object):
@@ -108,6 +109,8 @@ def merge_it_all_together(df,
     logging.info('there are no nulls')
     numeric_features = ['song_length', 'registration_init_time',
                         'expiration_date', 'bd']
+    if diamond:
+        numeric_features += ['diamond_prediction']
     X_numeric = df[numeric_features].as_matrix()
     member_idx = df['msnox']
     song_idx = df['song_idx']

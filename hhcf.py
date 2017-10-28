@@ -1,3 +1,6 @@
+# TODO
+# use joblib.Memory instead of dill
+
 # Compare two ways of estimating user- and item- bias factors
 # 1. One hot encode them and put them into an xgboost model with some other features
 # 2. Use `diamond` to fit a crossed random-effects model, then put these predictions into an xgboost model with the same set of other features
@@ -24,6 +27,7 @@
 import numpy as np
 import pandas as pd
 import click
+import pickle
 
 import xgboost as xgb
 from scipy import sparse
