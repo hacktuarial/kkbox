@@ -14,7 +14,6 @@ import dill
 SOURCE_FEATURES = ['source_system_tab', 'source_screen_name', 'source_type']
 
 
-
 class ExtraInfo(object):
     """ holds info about songs or members for making recs """
     def __init__(self, df):
@@ -81,6 +80,7 @@ def xgb_params():
     xgb_params['max_depth'] = 5
     xgb_params['silent'] = 1
     xgb_params['eval_metric'] = 'auc'
+    xgb_params['max_its'] = 100
     return xgb_params
 
 
@@ -133,25 +133,14 @@ def merge_it_all_together(df,
     return X, y
 
 
-def get_source_encoding(source_features, df):
+def encode_cat(x):
+    " convert a categorical feature to 1-hot encoding "
     logging.info('creating source features encoding')
     LE, OHE = LabelEncoder(), OneHotEncoder()
-    X_source = OHE.fit_transform(df[source_features].\
-        fillna('unknown').\
-        apply(LE.fit_transform))
-    return X_source
+    labels = LE.fit_transform(x.astype(str).fillna('unknown'))  # vector of ints
+    encodings = OHE.fit_transform(labels.reshape(-1, 1))
+    return encodings
 
-
-def train_test_split(df_train):
-    """
-    split labeled data into 2/3 train, 1/3 validation
-    this reflects that the unlabeled test data is about
-    half the size of the labeled data
-    """
-    TTS = 4918279
-    df_val = df_train.iloc[TTS:, :]
-    df_train = df_train.iloc[:TTS, :]
-    return df_train, df_val
 
 
 def fit_diamond_model(df_train):

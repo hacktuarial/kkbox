@@ -21,125 +21,182 @@
 #     * registration_init_time
 #     * expiration_date
 
+import os
+import itertools
+import pickle
 import numpy as np
 import pandas as pd
 import click
+from tqdm import tqdm
 import xgboost as xgb
 from scipy import sparse
 from sklearn.metrics import roc_auc_score
 import utils
-import os
+import logging
 from joblib import Memory
 
-import logging
 logging.basicConfig(format='%(asctime)s %(levelname)s:%(message)s',
                     level=logging.INFO)
 
 
-MAX_ITS = 200
+def get_data():
+    df = pd.read_csv('data/raw/train.csv')
+    df_songs = pd.read_csv('data/raw/songs.csv')
+    df_members = pd.read_csv('data/raw/members.csv')
+    df = pd.merge(df, df_songs, 'inner', 'song_id').\
+        merge(df_members, 'inner', 'msno')
+    return df
+
+
+def encode_categoricals(df, cats):
+    Xs = []
+    for cat in tqdm(cats):
+        Xs.append(utils.encode_cat(df[cat]))
+    return sparse.hstack(Xs)
+
+
+# train test split
+TTS = 4918279
+
+
+# ValueError: ctypes objects containing pointers cannot be pickled
+# i.e. you can't serialize a DMatrix object this way
+def create_designs(y, *argv):
+    X = sparse.hstack(list(argv)).tocsr()
+    D_train = xgb.DMatrix(X[:TTS, :],
+                          y[:TTS])
+    D_val = xgb.DMatrix(X[TTS:, :])
+    return D_train, D_val
+
+
+def cross_validate(X, K, params):
+    """
+    Do a grid search over parameters using K-fold cross validation
+    :param: X. an xgb.DMatrix
+    :param: K. number of folds
+    :params: list of parameter dictionaries
+    :max_its: how many trees to use
+    """
+    folds = np.random.choice(range(K), size=X.num_row())
+    results = []
+    for k in range(K):
+        logging.info("now on fold %d", k)
+        train_slice = [i for i, f in enumerate(folds) if f != k]
+        test_slice = [i for i, f in enumerate(folds) if f == k]
+        X_train = X.slice(train_slice)
+        X_test = X.slice(test_slice)
+        for param in params:
+            logging.info("using the following parameters")
+            logging.info(param)
+            model = xgb.train(param, X_train, param['max_its'])
+            auc = roc_auc_score(X_test.get_label(),
+                                model.predict(X_test))
+            results.append((k, param, auc))
+    return results
 
 
 @click.command()
 @click.option('--diamond/--no-diamond', required=True)
 @click.option('--use-cache/--clear-cache', required=True)
 def main(diamond, use_cache):
-    # serialization
     if use_cache:
         memory = Memory('/tmp')
-        fit_diamond_model = memory.cache(utils.fit_diamond_model)
-        encode_genres = memory.cache(utils.encode_genres)
-        get_source_encoding = memory.cache(utils.get_source_encoding)
-        merge_it_all_together = memory.cache(utils.merge_it_all_together)
+        c_get_data = memory.cache(get_data)
+        c_encode_categoricals = memory.cache(encode_categoricals)
+        # c_create_designs = memory.cache(create_designs)
     else:
-        fit_diamond_model = utils.fit_diamond_model
-        encode_genres = utils.encode_genres
-        get_source_encoding = utils.get_source_encoding
-        merge_it_all_together = utils. merge_it_all_together
+        c_get_data = get_data
+        c_encode_categoricals = encode_categoricals
+        # c_create_designs = create_designs
 
-    # # 1. Read in data
-    logging.info('reading in data')
-    df_train = pd.read_csv('data/raw/train.csv')
-    # there are 2.3M songs in the songs dataframe
-    # but only 300K in the training data
-    if os.path.isfile('data/processed/songs.dill') and use_cache:
-        logging.info('reading song encoding from disk')
-        # initialize empty object
-        songs = utils.ExtraInfo(df=None)
-        songs.load('data/processed/songs.dill')
-    else:
-        logging.info('creating song encoding')
-        df_songs = pd.read_csv('data/raw/songs.csv')
-        # restrict to songs present in the train/val data
-        df_songs = df_songs[df_songs['song_id'].isin(df_train['song_id'])]
-        x = ['artist_name', 'composer', 'lyricist', 'language']
-        songs = utils.ExtraInfo(df=df_songs)
-        songs.create_encoding(id_col='song_id', cat_features=x)
-        songs.save('data/processed/songs.dill')
-    # repeat for members
-    # in both members and df_train, there are 30-35K members
-    if os.path.isfile('data/processed/members.dill') and use_cache:
-        logging.info('reading member encoding from disk')
-        members = utils.ExtraInfo(df=None)
-        members.load('data/processed/members.dill')
-    else:
-        members = utils.ExtraInfo(df=pd.read_csv('data/raw/members.csv'))
-        x = ['city', 'gender', 'registered_via']
-        members.create_encoding(id_col='msno',
-                                cat_features=x)
-        members.save('data/processed/members.dill')
+    logging.info('reading in training data')
+    df = c_get_data()
 
+    # encode categorical features
+    # IGNORE GENRES FOR NOW
+    numeric_features = [
+            'song_length', 'registration_init_time',  # song features
+            'expiration_date', 'bd',  # member features
+            # there are no numeric 'source' features
+                        ]
+    cat_features = [
+            'artist_name', 'composer', 'lyricist', 'language',  # song features
+            'city', 'gender', 'registered_via',  # member features
+            'source_system_tab', 'source_screen_name', 'source_type',  # source features
+                    ]
+    id_cols = ['msno', 'song_id']
+    logging.info('checking %d numeric features' % len(numeric_features))
+    for x in numeric_features:
+        assert df[x].isnull().sum() == 0, "%s has nulls" % x
+    logging.info('numeric features look ok')
+    # drop any unused features
+    df = df[numeric_features + cat_features + ['target'] + id_cols]
+    logging.info('encoding %d categorical features', len(cat_features))
+    # it takes 5 minutes even just to read this from disk
+    X_cats = c_encode_categoricals(df, cat_features)
+
+    # estimate member- and song bias terms
     if diamond:
-        logging.info('using diamond for member, song biases')
-        matrix_list = []
-        df_train, df_val = utils.train_test_split(df_train)
-        diamond_model = fit_diamond_model(df_train)
-        df_train['diamond_prediction'] = diamond_model.predict(df_train)
-        df_val['diamond_prediction'] = diamond_model.predict(df_val)
+        logging.info('using diamond for member, song bias terms')
+        path = 'models/diamond.p'
+        if os.path.exists(path) and use_cache:
+            logging.info('reading pickled diamond model from disk')
+            with open(path, 'rb') as ff:
+                diamond_model = pickle.load(ff)
+        else:
+            df_diamond = df.iloc[:TTS, :][id_cols + ['target']].copy()
+            # matrix_list = []
+            diamond_model = utils.fit_diamond_model(df_diamond)
+            logging.info('saving fitted diamond model to disk')
+            with open(path, 'wb') as ff:
+                pickle.dump(diamond_model, ff)
+            # this is a mix of train + val observations
+            del df_diamond
+        df['diamond_prediction'] = diamond_model.predict(df)
     else:
+        logging.info('Using OHE for member and song bias terms')
         # IDs: benchmark for diamond
-        logging.info('creating member id encoding')
-        X_member_ids = sparse.coo_matrix((np.ones(len(members.df)),
-                                         (members.df['msnox'], members.df['msnox']))).tocsr()
-        logging.info('creating song id encoding')
-        X_song_ids = sparse.coo_matrix((np.ones(len(songs.df)),
-                                        (songs.df['song_idx'], songs.df['song_idx']))).tocsr()
-        logging.info('using one-hot encoding of member, song ids')
-        matrix_list = [X_member_ids[member_idx, :],
-                       X_song_ids[song_idx, :]]
+        X_ids = encode_categoricals(df, ['msno', 'song_id'])
+        X_cats = sparse.hstack([X_cats, X_ids])
 
-    # ### Genres
-    X_genres = encode_genres(songs.id_map, songs.df)
+    logging.info('creating XGB design matrix')
+    X_numeric = sparse.csr_matrix(df[numeric_features].as_matrix())
+    y = df['target']
+    y_val = y[TTS:]
+    del df
+    D_train, D_val = create_designs(y, X_numeric, X_cats)
+    del X_numeric, X_cats
 
-    # ### Source features
-    # Thanks to [Ritchie Ng](http://www.ritchieng.com/machinelearning-one-hot-encoding/) for guidance on using One Hot Encoder
-    X_source = get_source_encoding(source_features=utils.SOURCE_FEATURES,
-                                   df=df_train)
+    etas = [0.5, 0.75, 0.9]
+    depths = [5, 12, 20]
+    parameters = []
+    for eta, depth in itertools.product(etas, depths):
+        pi = utils.xgb_params()
+        pi['eta'] = eta
+        pi['max_depth'] = depth
+        pi['max_its'] = 100
+        parameters.append(pi)
 
-    logging.info('merging training data together')
-    X_train, y_train = merge_it_all_together(df_train,
-                                             diamond=diamond,
-                                             members=members,
-                                             matrix_list=matrix_list,
-                                             songs=songs,
-                                             genres=X_genres)
-    del df_train
-    D_train = xgb.DMatrix(sparse.hstack([X_train, X_source[:utils.TTS, :]]),
-                          y_train)
-    del X_train, y_train
-    logging.info('merging validation data together')
-    X_val, y_val = merge_it_all_together(df_val,
-                                         diamond=diamond,
-                                         members=members,
-                                         songs=songs,
-                                         matrix_list=matrix_list,
-                                         genres=X_genres)
-    del df_val
-    D_val = xgb.DMatrix(sparse.hstack([X_val, X_source[utils.TTS:, :]]))
-    # # TODO Use 5-fold CV and grid search to estimate hyperparameters
-    logging.info('fitting xgboost model using diamond predictions')
-    model = xgb.train(utils.xgb_params(), D_train, MAX_ITS)
-    logging.info("AUC = %f", roc_auc_score(y_val, model.predict(D_val)))
+    logging.info('fitting xgboost models')
+    results = cross_validate(X=D_train,
+                             K=10,
+                             params=parameters)
+    with open('xval_results.p', 'wb') as ff:
+        pickle.dump(results, ff)
+    # each entry in results is (fold, auc, parameters)
+    df_params = pd.DataFrame.from_dict([r[1] for r in results])
+    df_auc = pd.DataFrame(results)[[0, 2]].rename(
+            columns={0: 'fold', 2: 'auc'})
+    df_results = pd.concat([df_params, df_auc], axis=1)
+    df_results = df_results.groupby(['eta', 'max_depth', 'max_its'],
+                                    as_index=False).\
+        aggregate({'auc': np.mean}).\
+        sort_values('auc', ascending=False)
 
+    print("best parameters are")
+    print(df_results.head(5))
+
+    # TODO: retrain on all data
 
 
 if __name__ == '__main__':
