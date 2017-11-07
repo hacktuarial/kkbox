@@ -180,8 +180,13 @@ def encode_categoricals(df, cats):
 # i.e. you can't serialize a DMatrix object this way
 def create_designs(y, *argv):
     X = sparse.hstack(list(argv)).tocsr()
-    D_train = xgb.DMatrix(X[:TTS, :],
+    logging.info("X has shape %d x %d", X.shape[0], X.shape[1])
+    D_train = xgb.DMatrix(X[:TTS, :].tocsc(),
                           y[:TTS])
-    D_val = xgb.DMatrix(X[TTS:, :],
+    D_val = xgb.DMatrix(X[TTS:, :].tocsc(),
                         y[TTS:])
+    logging.info("Dtrain has shape %d x %d", D_train.num_row(), D_train.num_col())
+    logging.info("Dval has shape %d x %d", D_val.num_row(), D_val.num_col())
+
+    assert D_train.num_col() == D_val.num_col()
     return D_train, D_val
