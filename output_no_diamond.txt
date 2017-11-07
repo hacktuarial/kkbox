@@ -1,0 +1,142 @@
+/Users/timothysweetser/python/virtualenv/work3/lib/python3.6/site-packages/sklearn/cross_validation.py:41: DeprecationWarning: This module was deprecated in version 0.18 in favor of the model_selection module into which all the refactored classes and functions are moved. Also note that the interface of the new CV iterators are different from that of this module. This module will be removed in 0.20.
+  "This module will be removed in 0.20.", DeprecationWarning)
+2017-11-04 20:49:54,933 INFO:reading in training data
+2017-11-04 20:50:32,275 INFO:checking 4 numeric features
+2017-11-04 20:50:32,625 INFO:numeric features look ok
+2017-11-04 20:50:36,133 INFO:encoding 10 categorical features
+  0%|          | 0/10 [00:00<?, ?it/s]2017-11-04 20:50:36,136 INFO:creating source features encoding
+ 10%|█         | 1/10 [00:15<02:17, 15.23s/it]2017-11-04 20:50:51,365 INFO:creating source features encoding
+ 20%|██        | 2/10 [00:29<02:00, 15.07s/it]2017-11-04 20:51:06,081 INFO:creating source features encoding
+ 30%|███       | 3/10 [00:43<01:41, 14.53s/it]2017-11-04 20:51:19,331 INFO:creating source features encoding
+ 40%|████      | 4/10 [00:59<01:30, 15.11s/it]2017-11-04 20:51:35,792 INFO:creating source features encoding
+ 50%|█████     | 5/10 [01:26<01:33, 18.75s/it]2017-11-04 20:52:03,049 INFO:creating source features encoding
+ 60%|██████    | 6/10 [01:35<01:02, 15.67s/it]2017-11-04 20:52:11,543 INFO:creating source features encoding
+ 70%|███████   | 7/10 [02:02<00:57, 19.07s/it]2017-11-04 20:52:38,541 INFO:creating source features encoding
+ 80%|████████  | 8/10 [02:14<00:33, 17.00s/it]2017-11-04 20:52:50,704 INFO:creating source features encoding
+ 90%|█████████ | 9/10 [02:28<00:15, 15.94s/it]2017-11-04 20:53:04,182 INFO:creating source features encoding
+100%|██████████| 10/10 [02:40<00:00, 15.00s/it]
+2017-11-04 20:53:20,065 INFO:Using OHE for member and song bias terms
+  0%|          | 0/2 [00:00<?, ?it/s]2017-11-04 20:53:20,066 INFO:creating source features encoding
+ 50%|█████     | 1/2 [00:09<00:09,  9.88s/it]2017-11-04 20:53:29,951 INFO:creating source features encoding
+100%|██████████| 2/2 [00:33<00:00, 14.12s/it]
+2017-11-04 20:53:56,340 INFO:creating XGB design matrix
+2017-11-04 20:55:25,772 INFO:fitting xgboost models
+2017-11-04 20:55:25,834 INFO:now on fold 0/8
+2017-11-04 20:55:33,545 INFO:using the following parameters
+2017-11-04 20:55:33,545 INFO:{'objective': 'binary:logistic', 'eta': 0.5, 'max_depth': 5, 'silent': 1, 'eval_metric': 'auc', 'max_its': 100}
+[20:55:34] Tree method is automatically selected to be 'approx' for faster speed. to use old behavior(exact greedy algorithm on single machine), set tree_method to 'exact'
+2017-11-04 21:10:31,289 INFO:using the following parameters
+2017-11-04 21:10:31,290 INFO:{'objective': 'binary:logistic', 'eta': 0.5, 'max_depth': 12, 'silent': 1, 'eval_metric': 'auc', 'max_its': 100}
+2017-11-04 21:58:02,713 INFO:using the following parameters
+2017-11-04 21:58:02,713 INFO:{'objective': 'binary:logistic', 'eta': 0.75, 'max_depth': 5, 'silent': 1, 'eval_metric': 'auc', 'max_its': 100}
+2017-11-04 22:12:53,099 INFO:using the following parameters
+2017-11-04 22:12:53,101 INFO:{'objective': 'binary:logistic', 'eta': 0.75, 'max_depth': 12, 'silent': 1, 'eval_metric': 'auc', 'max_its': 100}
+2017-11-04 22:58:31,512 INFO:using the following parameters
+2017-11-04 22:58:31,513 INFO:{'objective': 'binary:logistic', 'eta': 0.9, 'max_depth': 5, 'silent': 1, 'eval_metric': 'auc', 'max_its': 100}
+2017-11-04 23:13:18,988 INFO:using the following parameters
+2017-11-04 23:13:18,988 INFO:{'objective': 'binary:logistic', 'eta': 0.9, 'max_depth': 12, 'silent': 1, 'eval_metric': 'auc', 'max_its': 100}
+2017-11-04 23:58:06,753 INFO:now on fold 1/8
+2017-11-04 23:58:16,505 INFO:using the following parameters
+2017-11-04 23:58:16,506 INFO:{'objective': 'binary:logistic', 'eta': 0.5, 'max_depth': 5, 'silent': 1, 'eval_metric': 'auc', 'max_its': 100}
+[23:58:17] Tree method is automatically selected to be 'approx' for faster speed. to use old behavior(exact greedy algorithm on single machine), set tree_method to 'exact'
+2017-11-05 00:13:00,005 INFO:using the following parameters
+2017-11-05 00:13:00,005 INFO:{'objective': 'binary:logistic', 'eta': 0.5, 'max_depth': 12, 'silent': 1, 'eval_metric': 'auc', 'max_its': 100}
+2017-11-05 01:00:21,706 INFO:using the following parameters
+2017-11-05 01:00:21,707 INFO:{'objective': 'binary:logistic', 'eta': 0.75, 'max_depth': 5, 'silent': 1, 'eval_metric': 'auc', 'max_its': 100}
+2017-11-05 01:15:03,214 INFO:using the following parameters
+2017-11-05 01:15:03,215 INFO:{'objective': 'binary:logistic', 'eta': 0.75, 'max_depth': 12, 'silent': 1, 'eval_metric': 'auc', 'max_its': 100}
+2017-11-05 01:00:54,837 INFO:using the following parameters
+2017-11-05 01:00:54,838 INFO:{'objective': 'binary:logistic', 'eta': 0.9, 'max_depth': 5, 'silent': 1, 'eval_metric': 'auc', 'max_its': 100}
+2017-11-05 01:15:38,208 INFO:using the following parameters
+2017-11-05 01:15:38,208 INFO:{'objective': 'binary:logistic', 'eta': 0.9, 'max_depth': 12, 'silent': 1, 'eval_metric': 'auc', 'max_its': 100}
+2017-11-05 02:00:55,581 INFO:now on fold 2/8
+2017-11-05 02:01:05,441 INFO:using the following parameters
+2017-11-05 02:01:05,442 INFO:{'objective': 'binary:logistic', 'eta': 0.5, 'max_depth': 5, 'silent': 1, 'eval_metric': 'auc', 'max_its': 100}
+[02:01:06] Tree method is automatically selected to be 'approx' for faster speed. to use old behavior(exact greedy algorithm on single machine), set tree_method to 'exact'
+2017-11-05 02:15:51,099 INFO:using the following parameters
+2017-11-05 02:15:51,099 INFO:{'objective': 'binary:logistic', 'eta': 0.5, 'max_depth': 12, 'silent': 1, 'eval_metric': 'auc', 'max_its': 100}
+2017-11-05 03:03:12,467 INFO:using the following parameters
+2017-11-05 03:03:12,469 INFO:{'objective': 'binary:logistic', 'eta': 0.75, 'max_depth': 5, 'silent': 1, 'eval_metric': 'auc', 'max_its': 100}
+2017-11-05 03:17:46,523 INFO:using the following parameters
+2017-11-05 03:17:46,524 INFO:{'objective': 'binary:logistic', 'eta': 0.75, 'max_depth': 12, 'silent': 1, 'eval_metric': 'auc', 'max_its': 100}
+2017-11-05 04:02:35,807 INFO:using the following parameters
+2017-11-05 04:02:35,808 INFO:{'objective': 'binary:logistic', 'eta': 0.9, 'max_depth': 5, 'silent': 1, 'eval_metric': 'auc', 'max_its': 100}
+2017-11-05 04:17:16,395 INFO:using the following parameters
+2017-11-05 04:17:16,396 INFO:{'objective': 'binary:logistic', 'eta': 0.9, 'max_depth': 12, 'silent': 1, 'eval_metric': 'auc', 'max_its': 100}
+2017-11-05 05:02:18,627 INFO:now on fold 3/8
+2017-11-05 05:02:26,841 INFO:using the following parameters
+2017-11-05 05:02:26,843 INFO:{'objective': 'binary:logistic', 'eta': 0.5, 'max_depth': 5, 'silent': 1, 'eval_metric': 'auc', 'max_its': 100}
+[05:02:27] Tree method is automatically selected to be 'approx' for faster speed. to use old behavior(exact greedy algorithm on single machine), set tree_method to 'exact'
+2017-11-05 05:17:13,072 INFO:using the following parameters
+2017-11-05 05:17:13,072 INFO:{'objective': 'binary:logistic', 'eta': 0.5, 'max_depth': 12, 'silent': 1, 'eval_metric': 'auc', 'max_its': 100}
+2017-11-05 06:03:46,266 INFO:using the following parameters
+2017-11-05 06:03:46,268 INFO:{'objective': 'binary:logistic', 'eta': 0.75, 'max_depth': 5, 'silent': 1, 'eval_metric': 'auc', 'max_its': 100}
+2017-11-05 06:18:25,348 INFO:using the following parameters
+2017-11-05 06:18:25,348 INFO:{'objective': 'binary:logistic', 'eta': 0.75, 'max_depth': 12, 'silent': 1, 'eval_metric': 'auc', 'max_its': 100}
+2017-11-05 07:04:06,762 INFO:using the following parameters
+2017-11-05 07:04:06,763 INFO:{'objective': 'binary:logistic', 'eta': 0.9, 'max_depth': 5, 'silent': 1, 'eval_metric': 'auc', 'max_its': 100}
+2017-11-05 07:18:53,362 INFO:using the following parameters
+2017-11-05 07:18:53,362 INFO:{'objective': 'binary:logistic', 'eta': 0.9, 'max_depth': 12, 'silent': 1, 'eval_metric': 'auc', 'max_its': 100}
+2017-11-05 08:04:31,221 INFO:now on fold 4/8
+2017-11-05 08:04:40,416 INFO:using the following parameters
+2017-11-05 08:04:40,418 INFO:{'objective': 'binary:logistic', 'eta': 0.5, 'max_depth': 5, 'silent': 1, 'eval_metric': 'auc', 'max_its': 100}
+[08:04:41] Tree method is automatically selected to be 'approx' for faster speed. to use old behavior(exact greedy algorithm on single machine), set tree_method to 'exact'
+2017-11-05 08:19:33,483 INFO:using the following parameters
+2017-11-05 08:19:33,483 INFO:{'objective': 'binary:logistic', 'eta': 0.5, 'max_depth': 12, 'silent': 1, 'eval_metric': 'auc', 'max_its': 100}
+2017-11-05 09:07:30,571 INFO:using the following parameters
+2017-11-05 09:07:30,574 INFO:{'objective': 'binary:logistic', 'eta': 0.75, 'max_depth': 5, 'silent': 1, 'eval_metric': 'auc', 'max_its': 100}
+2017-11-05 09:22:12,865 INFO:using the following parameters
+2017-11-05 09:22:12,866 INFO:{'objective': 'binary:logistic', 'eta': 0.75, 'max_depth': 12, 'silent': 1, 'eval_metric': 'auc', 'max_its': 100}
+2017-11-05 10:07:33,914 INFO:using the following parameters
+2017-11-05 10:07:33,917 INFO:{'objective': 'binary:logistic', 'eta': 0.9, 'max_depth': 5, 'silent': 1, 'eval_metric': 'auc', 'max_its': 100}
+2017-11-05 10:22:13,730 INFO:using the following parameters
+2017-11-05 10:22:13,732 INFO:{'objective': 'binary:logistic', 'eta': 0.9, 'max_depth': 12, 'silent': 1, 'eval_metric': 'auc', 'max_its': 100}
+2017-11-05 11:06:31,376 INFO:now on fold 5/8
+2017-11-05 11:06:40,349 INFO:using the following parameters
+2017-11-05 11:06:40,350 INFO:{'objective': 'binary:logistic', 'eta': 0.5, 'max_depth': 5, 'silent': 1, 'eval_metric': 'auc', 'max_its': 100}
+[11:06:40] Tree method is automatically selected to be 'approx' for faster speed. to use old behavior(exact greedy algorithm on single machine), set tree_method to 'exact'
+2017-11-05 11:21:26,382 INFO:using the following parameters
+2017-11-05 11:21:26,383 INFO:{'objective': 'binary:logistic', 'eta': 0.5, 'max_depth': 12, 'silent': 1, 'eval_metric': 'auc', 'max_its': 100}
+2017-11-05 12:08:16,142 INFO:using the following parameters
+2017-11-05 12:08:16,144 INFO:{'objective': 'binary:logistic', 'eta': 0.75, 'max_depth': 5, 'silent': 1, 'eval_metric': 'auc', 'max_its': 100}
+2017-11-05 12:22:58,200 INFO:using the following parameters
+2017-11-05 12:22:58,201 INFO:{'objective': 'binary:logistic', 'eta': 0.75, 'max_depth': 12, 'silent': 1, 'eval_metric': 'auc', 'max_its': 100}
+2017-11-05 13:08:18,037 INFO:using the following parameters
+2017-11-05 13:08:18,038 INFO:{'objective': 'binary:logistic', 'eta': 0.9, 'max_depth': 5, 'silent': 1, 'eval_metric': 'auc', 'max_its': 100}
+2017-11-05 13:22:56,316 INFO:using the following parameters
+2017-11-05 13:22:56,316 INFO:{'objective': 'binary:logistic', 'eta': 0.9, 'max_depth': 12, 'silent': 1, 'eval_metric': 'auc', 'max_its': 100}
+2017-11-05 14:08:44,052 INFO:now on fold 6/8
+2017-11-05 14:08:52,622 INFO:using the following parameters
+2017-11-05 14:08:52,622 INFO:{'objective': 'binary:logistic', 'eta': 0.5, 'max_depth': 5, 'silent': 1, 'eval_metric': 'auc', 'max_its': 100}
+[14:08:53] Tree method is automatically selected to be 'approx' for faster speed. to use old behavior(exact greedy algorithm on single machine), set tree_method to 'exact'
+2017-11-05 14:23:40,935 INFO:using the following parameters
+2017-11-05 14:23:40,935 INFO:{'objective': 'binary:logistic', 'eta': 0.5, 'max_depth': 12, 'silent': 1, 'eval_metric': 'auc', 'max_its': 100}
+2017-11-05 15:14:35,122 INFO:using the following parameters
+2017-11-05 15:14:35,124 INFO:{'objective': 'binary:logistic', 'eta': 0.75, 'max_depth': 5, 'silent': 1, 'eval_metric': 'auc', 'max_its': 100}
+2017-11-05 15:29:33,698 INFO:using the following parameters
+2017-11-05 15:29:33,698 INFO:{'objective': 'binary:logistic', 'eta': 0.75, 'max_depth': 12, 'silent': 1, 'eval_metric': 'auc', 'max_its': 100}
+2017-11-05 16:15:48,862 INFO:using the following parameters
+2017-11-05 16:15:48,863 INFO:{'objective': 'binary:logistic', 'eta': 0.9, 'max_depth': 5, 'silent': 1, 'eval_metric': 'auc', 'max_its': 100}
+2017-11-05 16:30:33,016 INFO:using the following parameters
+2017-11-05 16:30:33,016 INFO:{'objective': 'binary:logistic', 'eta': 0.9, 'max_depth': 12, 'silent': 1, 'eval_metric': 'auc', 'max_its': 100}
+2017-11-05 17:15:38,868 INFO:now on fold 7/8
+2017-11-05 17:15:48,886 INFO:using the following parameters
+2017-11-05 17:15:48,887 INFO:{'objective': 'binary:logistic', 'eta': 0.5, 'max_depth': 5, 'silent': 1, 'eval_metric': 'auc', 'max_its': 100}
+[17:15:49] Tree method is automatically selected to be 'approx' for faster speed. to use old behavior(exact greedy algorithm on single machine), set tree_method to 'exact'
+2017-11-05 17:30:42,502 INFO:using the following parameters
+2017-11-05 17:30:42,503 INFO:{'objective': 'binary:logistic', 'eta': 0.5, 'max_depth': 12, 'silent': 1, 'eval_metric': 'auc', 'max_its': 100}
+2017-11-05 18:19:01,650 INFO:using the following parameters
+2017-11-05 18:19:01,651 INFO:{'objective': 'binary:logistic', 'eta': 0.75, 'max_depth': 5, 'silent': 1, 'eval_metric': 'auc', 'max_its': 100}
+2017-11-05 18:33:46,389 INFO:using the following parameters
+2017-11-05 18:33:46,390 INFO:{'objective': 'binary:logistic', 'eta': 0.75, 'max_depth': 12, 'silent': 1, 'eval_metric': 'auc', 'max_its': 100}
+2017-11-05 19:18:55,901 INFO:using the following parameters
+2017-11-05 19:18:55,901 INFO:{'objective': 'binary:logistic', 'eta': 0.9, 'max_depth': 5, 'silent': 1, 'eval_metric': 'auc', 'max_its': 100}
+2017-11-05 19:34:05,359 INFO:using the following parameters
+2017-11-05 19:34:05,359 INFO:{'objective': 'binary:logistic', 'eta': 0.9, 'max_depth': 12, 'silent': 1, 'eval_metric': 'auc', 'max_its': 100}
+best parameters are
+    eta  max_depth  max_its       auc
+5  0.90         12      100  0.738067
+3  0.75         12      100  0.737084
+1  0.50         12      100  0.732697
+4  0.90          5      100  0.712052
+2  0.75          5      100  0.710707
