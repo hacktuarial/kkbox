@@ -27,7 +27,6 @@ import pickle
 import numpy as np
 import pandas as pd
 import click
-from tqdm import tqdm
 import xgboost as xgb
 from scipy import sparse
 from sklearn.metrics import roc_auc_score
@@ -37,36 +36,6 @@ from joblib import Memory
 
 logging.basicConfig(format='%(asctime)s %(levelname)s:%(message)s',
                     level=logging.INFO)
-
-
-def get_data():
-    df = pd.read_csv('data/raw/train.csv')
-    df_songs = pd.read_csv('data/raw/songs.csv')
-    df_members = pd.read_csv('data/raw/members.csv')
-    df = pd.merge(df, df_songs, 'inner', 'song_id').\
-        merge(df_members, 'inner', 'msno')
-    return df
-
-
-def encode_categoricals(df, cats):
-    Xs = []
-    for cat in tqdm(cats):
-        Xs.append(utils.encode_cat(df[cat]))
-    return sparse.hstack(Xs)
-
-
-# train test split
-TTS = 4918279
-
-
-# ValueError: ctypes objects containing pointers cannot be pickled
-# i.e. you can't serialize a DMatrix object this way
-def create_designs(y, *argv):
-    X = sparse.hstack(list(argv)).tocsr()
-    D_train = xgb.DMatrix(X[:TTS, :],
-                          y[:TTS])
-    D_val = xgb.DMatrix(X[TTS:, :])
-    return D_train, D_val
 
 
 def cross_validate(X, K, params):
@@ -80,7 +49,7 @@ def cross_validate(X, K, params):
     folds = np.random.choice(range(K), size=X.num_row())
     results = []
     for k in range(K):
-        logging.info("now on fold %d", k)
+        logging.info("now on fold %d/%d", k, K)
         train_slice = [i for i, f in enumerate(folds) if f != k]
         test_slice = [i for i, f in enumerate(folds) if f == k]
         X_train = X.slice(train_slice)
@@ -101,12 +70,12 @@ def cross_validate(X, K, params):
 def main(diamond, use_cache):
     if use_cache:
         memory = Memory('/tmp')
-        c_get_data = memory.cache(get_data)
-        c_encode_categoricals = memory.cache(encode_categoricals)
+        c_get_data = memory.cache(utils.get_data)
+        c_encode_categoricals = memory.cache(utils.encode_categoricals)
         # c_create_designs = memory.cache(create_designs)
     else:
-        c_get_data = get_data
-        c_encode_categoricals = encode_categoricals
+        c_get_data = utils.get_data
+        c_encode_categoricals = utils.encode_categoricals
         # c_create_designs = create_designs
 
     logging.info('reading in training data')
@@ -144,7 +113,7 @@ def main(diamond, use_cache):
             with open(path, 'rb') as ff:
                 diamond_model = pickle.load(ff)
         else:
-            df_diamond = df.iloc[:TTS, :][id_cols + ['target']].copy()
+            df_diamond = df.iloc[:utils.TTS, :][id_cols + ['target']].copy()
             # matrix_list = []
             diamond_model = utils.fit_diamond_model(df_diamond)
             logging.info('saving fitted diamond model to disk')
@@ -153,22 +122,26 @@ def main(diamond, use_cache):
             # this is a mix of train + val observations
             del df_diamond
         df['diamond_prediction'] = diamond_model.predict(df)
+        numeric_features.append('diamond_prediction')
     else:
         logging.info('Using OHE for member and song bias terms')
         # IDs: benchmark for diamond
-        X_ids = encode_categoricals(df, ['msno', 'song_id'])
+        X_ids = utils.encode_categoricals(df, ['msno', 'song_id'])
         X_cats = sparse.hstack([X_cats, X_ids])
 
     logging.info('creating XGB design matrix')
     X_numeric = sparse.csr_matrix(df[numeric_features].as_matrix())
     y = df['target']
-    y_val = y[TTS:]
+    # y_val = y[TTS:]
     del df
-    D_train, D_val = create_designs(y, X_numeric, X_cats)
+    logging.info("Using %d numeric features", X_numeric.shape[1])
+    logging.info("Using %d categorical features", X_cats.shape[1])
+    D_train, D_val = utils.create_designs(y, X_numeric, X_cats)
     del X_numeric, X_cats
 
+    # TODO greater depths, more iterations, higher eta
     etas = [0.5, 0.75, 0.9]
-    depths = [5, 12, 20]
+    depths = [5, 12]
     parameters = []
     for eta, depth in itertools.product(etas, depths):
         pi = utils.xgb_params()
@@ -179,7 +152,7 @@ def main(diamond, use_cache):
 
     logging.info('fitting xgboost models')
     results = cross_validate(X=D_train,
-                             K=10,
+                             K=8,
                              params=parameters)
     with open('xval_results.p', 'wb') as ff:
         pickle.dump(results, ff)
@@ -196,7 +169,7 @@ def main(diamond, use_cache):
     print("best parameters are")
     print(df_results.head(5))
 
-    # TODO: retrain on all data
+    # TODO: retrain on all data, then evaluate on D_val and y_val
 
 
 if __name__ == '__main__':

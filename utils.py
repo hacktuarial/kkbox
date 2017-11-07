@@ -2,6 +2,8 @@ import numpy as np
 import pandas as pd
 import os
 import logging
+from tqdm import tqdm
+import xgboost as xgb
 
 from scipy import sparse
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder
@@ -11,6 +13,7 @@ from diamond.glms.logistic import LogisticRegression
 # serialization
 import dill
 
+TTS = 4918279
 SOURCE_FEATURES = ['source_system_tab', 'source_screen_name', 'source_type']
 
 
@@ -142,7 +145,6 @@ def encode_cat(x):
     return encodings
 
 
-
 def fit_diamond_model(df_train):
     logging.info('fitting diamond model')
     formula = 'target ~ 1 + (1|song_id) + (1|msno)'
@@ -157,3 +159,29 @@ def fit_diamond_model(df_train):
                   axis=1, inplace=True, errors='ignore')
     return diamond_model
 
+
+def get_data():
+    df = pd.read_csv('data/raw/train.csv')
+    df_songs = pd.read_csv('data/raw/songs.csv')
+    df_members = pd.read_csv('data/raw/members.csv')
+    df = pd.merge(df, df_songs, 'inner', 'song_id').\
+        merge(df_members, 'inner', 'msno')
+    return df
+
+
+def encode_categoricals(df, cats):
+    Xs = []
+    for cat in tqdm(cats):
+        Xs.append(encode_cat(df[cat]))
+    return sparse.hstack(Xs)
+
+
+# ValueError: ctypes objects containing pointers cannot be pickled
+# i.e. you can't serialize a DMatrix object this way
+def create_designs(y, *argv):
+    X = sparse.hstack(list(argv)).tocsr()
+    D_train = xgb.DMatrix(X[:TTS, :],
+                          y[:TTS])
+    D_val = xgb.DMatrix(X[TTS:, :],
+                        y[TTS:])
+    return D_train, D_val
