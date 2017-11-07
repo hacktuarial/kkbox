@@ -20,7 +20,7 @@
 #     * bd
 #     * registration_init_time
 #     * expiration_date
-
+import sys
 import os
 import itertools
 import pickle
@@ -77,7 +77,10 @@ def main(diamond, use_cache):
         c_get_data = utils.get_data
         c_encode_categoricals = utils.encode_categoricals
         # c_create_designs = create_designs
-
+    # set up logging
+    logfile = 'output_diamond' if diamond else 'output_no_diamond'
+    logfile += '.txt'
+    sys.stdout = sys.stderr = open(logfile, 'a')
     logging.info('reading in training data')
     df = c_get_data()
 
@@ -139,15 +142,17 @@ def main(diamond, use_cache):
     D_train, D_val = utils.create_designs(y, X_numeric, X_cats)
     del X_numeric, X_cats
 
+    # etas = [0.5, 0.75, 0.9]
+    # depths = [5, 12]
     # TODO greater depths, more iterations, higher eta
-    etas = [0.5, 0.75, 0.9]
-    depths = [5, 12]
+    etas = [0.9, 0.95]
+    depths = [15, 20]
     parameters = []
     for eta, depth in itertools.product(etas, depths):
         pi = utils.xgb_params()
         pi['eta'] = eta
         pi['max_depth'] = depth
-        pi['max_its'] = 100
+        pi['max_its'] = 200
         parameters.append(pi)
 
     logging.info('fitting xgboost models')
@@ -168,8 +173,6 @@ def main(diamond, use_cache):
 
     print("best parameters are")
     print(df_results.head(5))
-
-    # TODO: retrain on all data, then evaluate on D_val and y_val
 
 
 if __name__ == '__main__':
